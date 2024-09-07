@@ -1,30 +1,32 @@
 #!/usr/bin/env python3
 """
-    Uses the Star Wars API to return the list of ships that can hold
+Create a method that returns the list of ships that can hold a given number
+of passengers
 """
 import requests
-from sys import argv
-from time import time
-if __name__ == "__main__":
-    if len(argv) < 2:
-        raise TypeError(
-            "Input must have the full API URL passed in as an argument: {}{}".
-            format('ex. "./2-user_location.py',
-            'https://api.github.com/users/holbertonschool"'))
-    try:
-        url = argv[1]
-        results = requests.get(url)
-        if results.status_code == 403:
-            reset = results.headers.get('X-Ratelimit-Reset')
-            waitTime = int(reset) - time()
-            minutes = round(waitTime / 60)
-            print('Reset in {} min'.format(minutes))
-        else:
-            results = results.json()
-            location = results.get('location')
-            if location:
-                print(location)
-            else:
-                print('Not found')
-    except Exception as err:
-        print('Not found')
+
+
+def availableShips(passengerCount):
+    """
+    Returns the list of ships that can hold a given number of passengers
+    :param passengerCount: number of passengers
+    :return: If no ship available, return an empty list
+    """
+    url = "https://swapi-api.hbtn.io/api/starships/"
+    r = requests.get(url)
+    json = r.json()
+    results = json["results"]
+    ships = []
+    while json["next"]:
+        for res in results:
+            if res["passengers"] == 'n/a' or res["passengers"] == 'unknown':
+                continue
+            if int(res["passengers"].replace(',', '')) >= passengerCount:
+                ships.append(res["name"])
+        url = json["next"]
+        r = requests.get(url)
+        json = r.json()
+        results = json["results"]
+    return ships
+
+
