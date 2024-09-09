@@ -1,35 +1,23 @@
 #!/usr/bin/env python3
-
-"""
-    Uses the Star Wars API to return the list of ships that can hold
-"""
-
+"""Pipeline Api"""
 import requests
-from sys import argv
-from time import time
+import sys
+from datetime import datetime
 
 
-if __name__ == "__main__":
-    if len(argv) < 2:
-        raise TypeError(
-            "Input must have the full API URL passed in as an argument: {}{}".
-            format('ex. "./2-user_location.py',
-                   'https://api.github.com/users/holbertonschool"'))
-    try:
-        url = argv[1]
-        results = requests.get(url)
-        if results.status_code == 403:
-            reset = results.headers.get('X-Ratelimit-Reset')
-            waitTime = int(reset) - time()
-            minutes = round(waitTime / 60)
-            print('Reset in {} min'.format(minutes))
-        else:
-            results = results.json()
-            location = results.get('location')
-            if location:
-                print(location)
-            else:
-                print('Not found')
-    except Exception as err:
-        print('Not found')
+if __name__ == '__main__':
+    """pipeline api"""
+    url = sys.argv[1]
+    response = requests.get(url)
+
+    if response.status_code == 404:
+        print("Not found")
+    elif response.status_code == 403:
+        string = 'X-Ratelimit-Reset'
+        date = datetime.fromtimestamp(int(response.headers[string]))
+        min = str((date - datetime.now())).split(':')[1]
+        min = int(min)
+        print("Reset in {} min".format(min))
+    else:
+        print(response.json()["location"])
         
